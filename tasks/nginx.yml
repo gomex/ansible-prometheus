@@ -1,0 +1,72 @@
+---
+# setup docker container for nginx reverse proxy and auth
+
+- name: Only run "update_cache=yes" if the last update was more than 1 day ago
+  apt:
+    update_cache: yes
+    cache_valid_time: 86400
+
+- name: Install required system packages
+  apt:
+    name: "{{ item }}"
+    state: latest
+  loop: ['apache2-utils']
+
+- pip:
+    name: passlib
+
+- name: Create nginx dir
+  file:
+    path: /etc/nginx/conf.d
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- htpasswd:
+    path: /etc/nginx/passwd/.prometheus-passwdfile
+    name: "{{ prometheus_username }}"
+    password: "{{ prometheus_password }}"
+    owner: root
+    group: root
+    mode: 0755
+  notify: restart nginx
+
+- htpasswd:
+    path: /etc/nginx/passwd/.alertmanager-passwdfile
+    name: "{{ alertmanager_username }}"
+    password: "{{ alertmanager_password }}"
+    owner: root
+    group: root
+    mode: 0755
+  notify: restart nginx
+
+- name: Copy container nginx configs
+  copy:
+    src: files/default.conf
+    dest: /etc/nginx/conf.d/default.conf
+    owner: root
+    group: root
+    mode: 0755
+  notify: restart nginx
+
+- name: Create nginx docker container
+  docker_container:
+    name: nginx
+    image: nginx:alpine
+    state: started
+    privileged: yes
+    pull: yes
+    log_driver: 'json-file'
+    log_opt:
+      max-size: 100m
+    restart_policy: unless-stopped
+    networks:
+      - name: internal
+    published_ports:
+      - 9090:9090
+      - 9093:9093
+    volumes: 
+      - /etc/nginx/conf.d:/etc/nginx/conf.d:ro
+      - /etc/nginx/passwd:/etc/nginx/passwd:ro
+      - /etc/ssl/certs:/etc/ssl/certs

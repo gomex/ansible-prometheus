@@ -1,0 +1,91 @@
+---
+# setup docker containers for prometheus server
+
+- name: Create an internal docker network
+  docker_network:
+    name: internal
+
+- name: Create prometheus docker container
+  docker_container:
+    name: prometheus
+    image: prom/prometheus:v2.18.1
+    state: started
+    privileged: yes
+    pull: yes
+    log_driver: 'json-file'
+    log_opt:
+      max-size: 100m
+    networks:
+      - name: internal
+    restart_policy: unless-stopped
+    volumes: /etc/prometheus:/etc/prometheus
+    command: "--config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus --web.console.libraries=/usr/share/prometheus/console_libraries --web.console.templates=/usr/share/prometheus/consoles --web.external-url=http://{{ inventory_hostname }}:9090"
+
+- name: Create alertmanager docker container
+  docker_container:
+    name: alertmanager
+    image: prom/alertmanager:v0.20.0
+    state: started
+    privileged: yes
+    pull: yes
+    log_driver: 'json-file'
+    log_opt:
+      max-size: 100m
+    networks:
+      - name: internal
+    restart_policy: unless-stopped
+    volumes: /etc/alertmanager:/etc/alertmanager
+    command: "--config.file=/etc/alertmanager/alertmanager.yml --storage.path=/alertmanager --web.external-url=http://{{ inventory_hostname }}:9093"
+
+- name: Create grafana docker container
+  docker_container:
+    name: grafana
+    image: grafana/grafana:6.7.3
+    state: started
+    privileged: yes
+    pull: yes
+    log_driver: 'json-file'
+    log_opt:
+      max-size: 100m
+    networks:
+      - name: internal
+    restart_policy: unless-stopped
+    published_ports: 3000:3000
+    volumes: /etc/grafana:/etc/grafana
+
+- name: Create node-exporter docker container
+  docker_container:
+    name: node-exporter
+    image: prom/node-exporter:v0.18.1
+    state: started
+    privileged: yes
+    pull: yes
+    log_driver: 'json-file'
+    log_opt:
+      max-size: 100m
+    networks:
+      - name: internal
+    restart_policy: unless-stopped
+    # published_ports: 9100:9100
+    volumes: /etc/node-exporter:/etc/node-exporter
+
+- name: Create cadvisor docker container
+  docker_container:
+    name: cadvisor
+    image: google/cadvisor:v0.33.0
+    state: started
+    privileged: yes
+    pull: yes
+    log_driver: 'json-file'
+    log_opt:
+      max-size: 100m
+    networks:
+      - name: internal
+    restart_policy: unless-stopped
+    # published_ports: 8080:8080
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro

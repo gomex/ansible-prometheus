@@ -1,0 +1,22 @@
+---
+# handlers file for prometheus
+
+- name: restart prometheus
+  command: "docker restart prometheus"
+  become: True
+
+- name: restart alertmanager
+  command: "docker restart alertmanager"
+  become: True
+
+- name: restart grafana
+  command: "docker restart grafana"
+  become: True
+
+- name: restart burrow
+  command: "docker restart burrow-api"
+  become: True
+
+- name: restart nginx
+  command: "docker restart nginx"
+  become: True

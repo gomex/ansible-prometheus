@@ -1,0 +1,34 @@
+---
+# setup user account for prometheus
+
+- name: Create user for prometheus
+  user:
+    name: prometheus
+    create_home: no
+    shell: /bin/false
+    groups: sudo
+    append: yes
+    
+- name: Create user for alertmanager
+  user:
+    name: alertmanager
+    create_home: no
+    shell: /bin/false
+    groups: sudo
+    append: yes
+
+- name: Create user for grafana
+  user:
+    name: grafana
+    create_home: no
+    shell: /bin/false
+    groups: sudo
+    append: yes
+
+- name: Create user for grafana
+  user:
+    name: node-exporter
+    create_home: no
+    shell: /bin/false
+    groups: sudo
+    append: yes

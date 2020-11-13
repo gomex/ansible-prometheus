@@ -1,0 +1,7 @@
+---
+# tasks file for prometheus server
+
+- include: users.yml
+- include: directories.yml
+- include: containers.yml
+- include: nginx.yml

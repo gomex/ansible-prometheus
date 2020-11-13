@@ -1,0 +1,53 @@
+---
+# setup directories for prometheus
+
+- name: Create prometheus dir
+  file:
+    path: /etc/prometheus
+    state: directory
+    owner: prometheus
+    group: prometheus
+    mode: 0755
+
+- name: Copy prometheus config
+  template:
+    src: templates/prometheus.yml.j2
+    dest: /etc/prometheus/prometheus.yml
+    owner: prometheus
+    group: prometheus
+    mode: 0755
+  notify: restart prometheus
+
+- name: Create alertmanager dir
+  file:
+    path: /etc/alertmanager
+    state: directory
+    owner: alertmanager
+    group: alertmanager
+    mode: 0755
+
+- name: Template alertmanager config
+  template:
+    src: alertmanager.yml.j2
+    dest: /etc/alertmanager/alertmanager.yml
+    owner: alertmanager
+    group: alertmanager
+    mode: 0755
+  notify: restart alertmanager
+
+- name: Create grafana dir
+  file:
+    path: /etc/grafana
+    state: directory
+    owner: grafana
+    group: grafana
+    mode: 0755
+
+- name: Copy grafana config
+  copy:
+    src: files/grafana.ini
+    dest: /etc/grafana/grafana.ini
+    owner: grafana
+    group: grafana
+    mode: 0755
+  notify: restart grafana

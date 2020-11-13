@@ -1,0 +1,19 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  group_by: [alertname]
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 5h
+  receiver: 'slack'
+
+receivers:
+- name: 'slack'
+  slack_configs:
+    - channel: "#monitor"
+      send_resolved: true
+      icon_url: https://avatars3.githubusercontent.com/u/3380462
+      api_url: {{ alertmanager_slack_url }}
+      title: "{{ '{{' }} range .Alerts {{ '}}' }}{{ '{{' }} .Annotations.summary {{ '}}' }}\n{{ '{{' }} end {{ '}}' }}"
+      #text: "Text here\n{{ '{{' }} range .Alerts {{ '}}' }}{{ '{{' }} .Annotations.description {{ '}}' }}\n{{ '{{' }} end {{ '}}' }}"
